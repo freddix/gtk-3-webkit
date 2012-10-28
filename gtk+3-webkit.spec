@@ -1,12 +1,11 @@
 Summary:	Port of WebKit embeddable web component to GTK+3
 Name:		gtk+3-webkit
-Version:	1.8.3
+Version:	1.10.1
 Release:	1
 License:	BSD-like
 Group:		X11/Libraries
-Source0:	http://webkitgtk.org/releases/webkit-%{version}.tar.xz
-# Source0-md5:	f2f01b1fdc7262a2eede81ebed0970b2
-Patch0:		changeset_124099.diff
+Source0:	http://webkitgtk.org/releases/webkitgtk-%{version}.tar.xz
+# Source0-md5:	28c930cda012391453c476cdacfaca65
 URL:		http://www.webkitgtk.org/
 BuildRequires:	OpenGL-GLU-devel
 BuildRequires:	autoconf
@@ -30,8 +29,12 @@ BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
 BuildRequires:	libxslt-devel
 BuildRequires:	pkg-config
+BuildRequires:	ruby
 BuildRequires:	sqlite3-devel
+BuildRequires:	xorg-libXft-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		_libexecdir	%{_libdir}/webkitgtk
 
 %description
 webkit is a port of the WebKit embeddable web component to GTK+.
@@ -53,8 +56,7 @@ Requires:	%{name} = %{version}-%{release}
 Simple GTK+/webkit based browser.
 
 %prep
-%setup -qn webkit-%{version}
-%patch0 -p2
+%setup -qn webkitgtk-%{version}
 
 %build
 %{__gtkdocize}
@@ -63,6 +65,9 @@ Simple GTK+/webkit based browser.
 %{__autoheader}
 %{__automake}
 %{__autoconf}
+# https://bugs.webkit.org/show_bug.cgi?id=91154
+export CFLAGS="%(echo %{rpmcflags} | sed 's/ -g2/ -g1/g')"
+export CXXFLAGS="%(echo %{rpmcxxflags} | sed 's/ -g2/ -g1/g')"
 %configure \
 	--enable-geolocation	\
 	--enable-introspection	\
@@ -76,7 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-%find_lang webkit-3.0
+%find_lang webkitgtk-3.0
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -84,13 +89,19 @@ rm -rf $RPM_BUILD_ROOT
 %post	-p /usr/sbin/ldconfig
 %postun	-p /usr/sbin/ldconfig
 
-%files -f webkit-3.0.lang
+%files -f webkitgtk-3.0.lang
 %defattr(644,root,root,755)
 %attr(755,root,root) %ghost %{_libdir}/libjavascriptcoregtk-*.so.?
 %attr(755,root,root) %ghost %{_libdir}/libwebkitgtk-*.so.?
 %attr(755,root,root) %{_libdir}/libjavascriptcoregtk-*.so.*.*.*
 %attr(755,root,root) %{_libdir}/libwebkitgtk-*.so.*.*.*
 %{_libdir}/girepository-1.0/*.typelib
+
+%dir %{_libexecdir}
+%attr(755,root,root) %ghost %{_libdir}/libwebkit2gtk-3.0.so.18
+%attr(755,root,root) %{_libdir}/libwebkit2gtk-3.0.so.*.*.*
+%attr(755,root,root) %{_libexecdir}/WebKitPluginProcess
+%attr(755,root,root) %{_libexecdir}/WebKitWebProcess
 
 %dir %{_datadir}/webkitgtk-3.0
 %{_datadir}/webkitgtk-3.0/images
