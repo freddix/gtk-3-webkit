@@ -1,11 +1,11 @@
 Summary:	Port of WebKit embeddable web component to GTK+3
 Name:		gtk+3-webkit
-Version:	1.10.2
+Version:	2.0.0
 Release:	1
 License:	BSD-like
 Group:		X11/Libraries
 Source0:	http://webkitgtk.org/releases/webkitgtk-%{version}.tar.xz
-# Source0-md5:	7b1a652af1eb11bee5bf7209e9ff67e6
+# Source0-md5:	fa231ba8c9cd33575b9692614324be21
 URL:		http://www.webkitgtk.org/
 BuildRequires:	OpenGL-GLU-devel
 BuildRequires:	autoconf
@@ -27,6 +27,7 @@ BuildRequires:	librsvg-devel
 BuildRequires:	libsoup-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
+BuildRequires:	libwebp-devel
 BuildRequires:	libxslt-devel
 BuildRequires:	pkg-config
 BuildRequires:	ruby
@@ -34,7 +35,7 @@ BuildRequires:	sqlite3-devel
 BuildRequires:	xorg-libXft-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_libexecdir	%{_libdir}/webkitgtk
+%define		_libexecdir	%{_libdir}/webkit2gtk-3.0
 
 %description
 webkit is a port of the WebKit embeddable web component to GTK+.
@@ -46,6 +47,14 @@ Requires:	%{name} = %{version}-%{release}
 
 %description devel
 Development files for webkit.
+
+%package apidocs
+Summary:	WebKitGTK API documentation
+Group:		Documentation
+Requires:	gtk-doc-common
+
+%description apidocs
+WebKitGTK API documentation.
 
 %package demo
 Summary:	Demo GTK+/webkit application
@@ -59,7 +68,6 @@ Simple GTK+/webkit based browser.
 %setup -qn webkitgtk-%{version}
 
 %build
-%{__gtkdocize}
 %{__libtoolize}
 %{__aclocal} -I Source/autotools
 %{__autoheader}
@@ -69,11 +77,13 @@ Simple GTK+/webkit based browser.
 export CFLAGS="%(echo %{rpmcflags} | sed 's/ -g2/ -g1/g')"
 export CXXFLAGS="%(echo %{rpmcxxflags} | sed 's/ -g2/ -g1/g')"
 %configure \
-	--enable-geolocation	\
-	--enable-introspection	\
-	--enable-spellcheck	\
-	--with-gstreamer=1.0	\
-	--with-gtk=3.0
+	--disable-schemas-compile	\
+	--enable-geolocation		\
+	--enable-introspection		\
+	--enable-spellcheck		\
+	--with-gstreamer=1.0		\
+	--with-gtk=3.0			\
+	--with-html-dir=%{_gtkdocdir}
 %{__make}
 
 %install
@@ -82,7 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-%find_lang webkitgtk-3.0
+%find_lang WebKitGTK-3.0
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -90,19 +100,21 @@ rm -rf $RPM_BUILD_ROOT
 %post	-p /usr/sbin/ldconfig
 %postun	-p /usr/sbin/ldconfig
 
-%files -f webkitgtk-3.0.lang
+%files -f WebKitGTK-3.0.lang
 %defattr(644,root,root,755)
-%attr(755,root,root) %ghost %{_libdir}/libjavascriptcoregtk-*.so.?
-%attr(755,root,root) %ghost %{_libdir}/libwebkitgtk-*.so.?
+%attr(755,root,root) %ghost %{_libdir}/libjavascriptcoregtk-*.so.0
+%attr(755,root,root) %ghost %{_libdir}/libwebkitgtk-*.so.0
 %attr(755,root,root) %{_libdir}/libjavascriptcoregtk-*.so.*.*.*
 %attr(755,root,root) %{_libdir}/libwebkitgtk-*.so.*.*.*
 %{_libdir}/girepository-1.0/*.typelib
 
 %dir %{_libexecdir}
-%attr(755,root,root) %ghost %{_libdir}/libwebkit2gtk-3.0.so.18
+%dir %{_libexecdir}/injected-bundle
+%attr(755,root,root) %ghost %{_libdir}/libwebkit2gtk-3.0.so.25
 %attr(755,root,root) %{_libdir}/libwebkit2gtk-3.0.so.*.*.*
 %attr(755,root,root) %{_libexecdir}/WebKitPluginProcess
 %attr(755,root,root) %{_libexecdir}/WebKitWebProcess
+%attr(755,root,root) %{_libexecdir}/injected-bundle/libwebkit2gtkinjectedbundle.so
 
 %dir %{_datadir}/webkitgtk-3.0
 %{_datadir}/webkitgtk-3.0/images
@@ -116,4 +128,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/webkitgtk-3.0
 %{_pkgconfigdir}/*.pc
 %{_datadir}/gir-1.0/*.gir
+
+%files apidocs
+%defattr(644,root,root,755)
+%{_gtkdocdir}/webkitgtk
 
