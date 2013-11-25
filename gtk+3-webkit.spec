@@ -1,11 +1,11 @@
 Summary:	Port of WebKit embeddable web component to GTK+3
 Name:		gtk+3-webkit
-Version:	2.2.1
+Version:	2.2.2
 Release:	1
 License:	BSD-like
 Group:		X11/Libraries
 Source0:	http://webkitgtk.org/releases/webkitgtk-%{version}.tar.xz
-# Source0-md5:	f5decdd76b2c08ab6e01ac47342f680e
+# Source0-md5:	49cc8fd065de72603776a494e41c1977
 URL:		http://www.webkitgtk.org/
 BuildRequires:	OpenGL-GLU-devel
 BuildRequires:	autoconf
