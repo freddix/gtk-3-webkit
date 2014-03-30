@@ -1,12 +1,13 @@
 Summary:	Port of WebKit embeddable web component to GTK+3
 Name:		gtk+3-webkit
-Version:	2.2.5
+Version:	2.4.0
 Release:	1
 License:	BSD-like
 Group:		X11/Libraries
 Source0:	http://webkitgtk.org/releases/webkitgtk-%{version}.tar.xz
-# Source0-md5:	6083e027308cf6731c6ce394bf059fa8
+# Source0-md5:	c759bf11fe4cadd1268630f16a97f7b9
 URL:		http://www.webkitgtk.org/
+BuildRequires:	EGL-devel
 BuildRequires:	OpenGL-GLU-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -19,7 +20,6 @@ BuildRequires:	geoclue-devel
 BuildRequires:	gobject-introspection-devel
 BuildRequires:	gperf
 BuildRequires:	gstreamer-plugins-base-devel
-# required even for gtk+3 build (?)
 BuildRequires:	gtk+-devel
 BuildRequires:	gtk+3-devel
 BuildRequires:	icu-devel
@@ -37,7 +37,12 @@ BuildRequires:	sqlite3-devel
 BuildRequires:	xorg-libXft-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_libexecdir	%{_libdir}/webkit2gtk-3.0
+%define		_libexecdir	    %{_libdir}/webkit2gtk-3.0
+
+# unresolved, not sure how bad is it
+#   _ZSt11__once_call
+#   _ZSt15__once_callable
+%define		skip_post_check_so  libwebkit2gtk-3.0.so.* libwebkitgtk-3.0.so.* libjavascriptcoregtk-3.0.so.*
 
 %description
 webkit is a port of the WebKit embeddable web component to GTK+.
@@ -75,15 +80,17 @@ Simple GTK+/webkit based browser.
 %{__autoheader}
 %{__automake}
 %{__autoconf}
+
 # https://bugs.webkit.org/show_bug.cgi?id=91154
 export CFLAGS="%(echo %{rpmcflags} | sed 's/ -g2/ -g1/g')"
 export CXXFLAGS="%(echo %{rpmcxxflags} | sed 's/ -g2/ -g1/g')"
+export LDFLAGS="%{rpmldflags}"
 %configure \
 	--disable-schemas-compile	\
+	--disable-silent-rules		\
 	--enable-geolocation		\
 	--enable-introspection		\
 	--enable-spellcheck		\
-	--with-gstreamer=1.0		\
 	--with-gtk=3.0			\
 	--with-html-dir=%{_gtkdocdir}
 %{__make}
@@ -93,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
+
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/*.la
+%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/injected-bundle/*.la
 
 %find_lang WebKitGTK-3.0
 
@@ -114,6 +124,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libexecdir}/injected-bundle
 %attr(755,root,root) %ghost %{_libdir}/libwebkit2gtk-3.0.so.25
 %attr(755,root,root) %{_libdir}/libwebkit2gtk-3.0.so.*.*.*
+%attr(755,root,root) %{_libexecdir}/WebKitNetworkProcess
 %attr(755,root,root) %{_libexecdir}/WebKitPluginProcess
 %attr(755,root,root) %{_libexecdir}/WebKitWebProcess
 %attr(755,root,root) %{_libexecdir}/injected-bundle/libwebkit2gtkinjectedbundle.so
@@ -132,6 +143,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files apidocs
 %defattr(644,root,root,755)
-%{_gtkdocdir}/webkitgtk
 %{_gtkdocdir}/webkit2gtk
+%{_gtkdocdir}/webkitdomgtk
+%{_gtkdocdir}/webkitgtk
 
